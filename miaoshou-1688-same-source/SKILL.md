@@ -4,6 +4,7 @@ description: "From Miaoshou TikTok leaderboard candidates, opens the 1688 same-s
 metadata:
   category: miaoshou-tiktok
   emoji: 📦
+  version: "0.2.1"
   requires:
     - ego-browser
     - miaoshou-authenticated-session
@@ -35,8 +36,7 @@ the user to install them. Do **not** auto-install silently.
 | Skill | Why it is required | Install command |
 | --- | --- | --- |
 | `ego-browser` | Drives the Miaoshou ERP browser session | `npx skills add ego-browser -g` |
-| | `ego-browser` | drives the Miaoshou browser session | `npx skills add ego-browser -g` |
-| `miaoshou-tiktok-trending-pick` | upstream: candidate SKU from leaderboard scoring | `npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-tiktok-trending-pick -g` | | see below | see below |
+| `miaoshou-tiktok-trending-pick` | Upstream candidate SKU from leaderboard scoring | `npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-tiktok-trending-pick -g` |
 
 ### Detection step (run first, every time)
 
@@ -45,11 +45,9 @@ set -e
 required_skills="ego-browser miaoshou-tiktok-trending-pick"
 missing=""
 for s in $required_skills; do
-  for d in "$HOME/.codex/skills/$s" "$HOME/.agents/skills/$s"; do
-    if [ -d "$d" ]; then missing="$missing"; break; fi
+  if [ ! -d "$HOME/.codex/skills/$s" ] && [ ! -d "$HOME/.agents/skills/$s" ]; then
     missing="$missing $s"
-    break
-  done
+  fi
 done
 if [ -n "$missing" ]; then
   echo "MISSING_DEPENDENCIES:$missing"
@@ -83,7 +81,7 @@ so the SKILL.md files are picked up.
 
 ```mermaid
 flowchart TB
-  A[Receive candidate] --> B[Open Miaoshou /common/selecting_products_tiktok]
+  A[Receive candidate] --> B[Open TikTok market leaderboard]
   B --> C[Click 搜 1688 同款]
   C --> D[aibuy.1688.com iframe opens]
   D --> E{searchStrategy}
@@ -98,15 +96,26 @@ flowchart TB
 ```
 
 1. **Reuse or create task space** via `useOrCreateTaskSpace(taskId)`.
-2. **Navigate** to `/common/selecting_products_tiktok` and find the row whose `productId` matches the candidate.
+2. **Navigate** to `/tiktok/analytics/bestselling/product`, select the candidate's TikTok site, then search its `productId` and locate the exact leaderboard row.
 3. **Click** `搜 1688 同款` next to that row. Wait for the `aibuy.1688.com/landingpage/new-home/find-products.html?…` iframe to mount.
 4. **Search** the iframe:
    - If `searchStrategy = image`, upload the candidate thumbnail (`img.thumb`).
    - If `searchStrategy = keyword`, type the Japanese term (preferred) or English.
    - Wait for the result list (poll `snapshotText()` until rows appear).
 5. **Filter** results by `minPriceCny` ≤ price ≤ `maxPriceCny` and `sales ≥ minSales`. Sort by sales descending. Take the top match.
-6. **Click** `一键铺货` (use a stable `ref=N` from `snapshotText()`). Confirm the toast `已提交采集任务，可前往【公用采集箱】查看`.
+6. **Click** `一键铺货` inside the embedded iframe. Confirm the parent-page toast `已提交采集任务，可前往【公用采集箱】查看`.
 7. **Navigate** to `/common_collect_box/items`, search the candidate title, confirm one new row with the 1688 source offerId and `认领平台 = TikTok`.
+
+### Embedded iframe requirement
+
+The 1688 result page is a cross-origin out-of-process iframe (OOPIF). Opening its URL in a separate tab is useful for inspection, but its `一键铺货` action uses `postMessage` and only succeeds when the page is embedded under the Miaoshou parent. Keep the Miaoshou `/common_collect_box/alibaba_cross_hot_spots` tab open and attach to its child target with CDP when ordinary DOM helpers cannot see the iframe:
+
+1. Call `Target.getTargets` and select the `type = iframe` target whose `parentId` is the Miaoshou parent tab.
+2. Call `Target.attachToTarget` with `flatten: false`.
+3. Evaluate search and row-selection code through `Target.sendMessageToTarget`.
+4. Verify the confirmation dialog in the Miaoshou parent, then verify the new row under the `已认领` tab in the public collection box.
+
+Do not report success from a button click alone. Success requires both the parent confirmation and a new collection-box row with a concrete offerId.
 
 ## Output
 
@@ -130,6 +139,7 @@ flowchart TB
 | Symptom                                                | Likely cause                              | Recovery                                                                          |
 | ---------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------- |
 | Iframe `aibuy.1688.com` fails to load                | Ad-blocker / cookie scope              | Allow third-party cookies; reload the row; re-click `搜 1688 同款`.             |
+| Direct 1688 tab click produces no Miaoshou result    | `postMessage` has no Miaoshou parent   | Return to the embedded OOPIF and trigger `一键铺货` there.                      |
 | Search returns 0 rows                                | Query too narrow                       | Switch `searchStrategy` from `keyword` to `image`; lower `minSales`.           |
 | `认领平台 = 空` after collection                    | Shop authorization missing             | Authorize at `/auth/partner/tiktokBusiness`.                                    |
 | 采集弹框 returns `接Allegro官方通知…禁止发布Allegro` | Source listed on Allegro              | Reject and re-pick the second result; flag for review.                          |
