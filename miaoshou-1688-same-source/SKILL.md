@@ -42,9 +42,8 @@ the user to install them. Do **not** auto-install silently.
 
 ```bash
 set -e
-required_skills="ego-browser miaoshou-tiktok-trending-pick"
 missing=""
-for s in $required_skills; do
+for s in ego-browser miaoshou-tiktok-trending-pick; do
   if [ ! -d "$HOME/.codex/skills/$s" ] && [ ! -d "$HOME/.agents/skills/$s" ]; then
     missing="$missing $s"
   fi
