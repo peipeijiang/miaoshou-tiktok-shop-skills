@@ -37,6 +37,38 @@ gpt: "/miaoshou-tiktok-listing-editor rowId=<上一步输出> titleJa='...' desc
 gpt: "/miaoshou-tiktok-publish rowId=<上一步输出> shopName='Dailxm SHOP' site=JP egoBrowserTaskId=23"
 ```
 
+## 依赖管理与自动安装提示
+
+每个 Skill 启动时都会自带一个 `## Required Skills` 段落。Agent 读取后会先跑一段依赖检测脚本，列出缺失项并按 `npx skills add … -g` 命令逐一让你同意安装，**不会静默自动安装**。
+
+依赖层级：
+
+```
+ego-browser
+   ├── miaoshou-tiktok-trending-pick
+   ├── miaoshou-1688-same-source
+   │      └── miaoshou-tiktok-listing-editor
+   │             ├── miaoshou-tiktok-publish
+   │             ├── tiktok-shop-listing-optimization
+   │             └── tiktok-shop-compliance
+   └── (任意中间步骤可调用) tiktok-shop-pricing
+```
+
+如果要一键装齐，复制下面这一段：
+
+```bash
+npx skills add ego-browser -g
+npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-tiktok-trending-pick -g
+npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-1688-same-source -g
+npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-tiktok-listing-editor -g
+npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-tiktok-publish -g
+npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-listing-optimization -g
+npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-pricing -g
+npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-compliance -g
+```
+
+装完记得 `npx skills experimental_sync -y`，Codex 才会重新索引 `~/.codex/skills/` 与 `~/.agents/skills/`。
+
 ## 架构
 
 ```mermaid

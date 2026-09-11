@@ -25,6 +25,57 @@ Drives an authenticated Miaoshou ERP browser session to surface TikTok Shop cand
 | `maxCandidates`   | number | `20`             | Stop after this many rows (page-aware)                                                 |
 | `egoBrowserTaskId`| number | _(reuse latest)_ | Pass the task-space id from `useOrCreateTaskSpace(...)` to keep login state             |
 
+
+## Required Skills
+
+Before invoking this skill, the agent **must** detect missing dependencies and prompt
+the user to install them. Do **not** auto-install silently.
+
+| Skill | Why it is required | Install command |
+| --- | --- | --- |
+| `ego-browser` | Drives the Miaoshou ERP browser session | `npx skills add ego-browser -g` |
+| | `ego-browser` | drives the Miaoshou browser session | `npx skills add ego-browser -g` | | see below | see below |
+
+### Detection step (run first, every time)
+
+```bash
+set -e
+required_skills="ego-browser"
+missing=""
+for s in $required_skills; do
+  for d in "$HOME/.codex/skills/$s" "$HOME/.agents/skills/$s"; do
+    if [ -d "$d" ]; then missing="$missing"; break; fi
+    missing="$missing $s"
+    break
+  done
+done
+if [ -n "$missing" ]; then
+  echo "MISSING_DEPENDENCIES:$missing"
+fi
+```
+
+If `MISSING_DEPENDENCIES:` prints, **stop**, then ask the user:
+
+> Required skill(s) are not installed: `<list>`. The flow cannot run without them.
+> Recommended install commands:
+> ```
+> <commands, one per line>
+> ```
+> Install now? (y/n)
+
+If the user approves, run the commands verbatim. If not, exit and report the missing
+dependencies as the result. Never proceed with the workflow on missing skills.
+
+
+### Install all missing dependencies at once
+
+```bash
+npx skills add ego-browser -g
+```
+
+After installing, the user must reload Codex (or run `npx skills experimental_sync -y`)
+so the SKILL.md files are picked up.
+
 ## Workflow
 
 ```mermaid

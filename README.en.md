@@ -37,6 +37,38 @@ gpt: "/miaoshou-tiktok-listing-editor rowId=<prev output> titleJa='...' descript
 gpt: "/miaoshou-tiktok-publish rowId=<prev output> shopName='Dailxm SHOP' site=JP egoBrowserTaskId=23"
 ```
 
+## Dependency Handling
+
+Every skill ships a `## Required Skills` section. When the agent invokes a skill, it first runs a detection snippet to enumerate missing dependencies and then **prompts you** with `npx skills add … -g` install commands, one per missing skill. It never installs silently.
+
+Dependency tree:
+
+```
+ego-browser
+   ├── miaoshou-tiktok-trending-pick
+   ├── miaoshou-1688-same-source
+   │      └── miaoshou-tiktok-listing-editor
+   │             ├── miaoshou-tiktok-publish
+   │             ├── tiktok-shop-listing-optimization
+   │             └── tiktok-shop-compliance
+   └── tiktok-shop-pricing (advisory, any step)
+```
+
+Install everything in one go:
+
+```bash
+npx skills add ego-browser -g
+npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-tiktok-trending-pick -g
+npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-1688-same-source -g
+npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-tiktok-listing-editor -g
+npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-tiktok-publish -g
+npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-listing-optimization -g
+npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-pricing -g
+npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-compliance -g
+```
+
+After installing, run `npx skills experimental_sync -y` so Codex re-indexes `~/.codex/skills/` and `~/.agents/skills/`.
+
 ## Architecture
 
 ```mermaid

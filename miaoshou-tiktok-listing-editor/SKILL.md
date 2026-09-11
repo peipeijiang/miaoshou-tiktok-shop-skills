@@ -28,6 +28,63 @@ Drives the Miaoshou common-collection-box editor **and** the TikTok collect-box 
 | `brand`            | string | `无品牌`                                |                                                                        |
 | `egoBrowserTaskId` | number | required                                |                                                                        |
 
+
+## Required Skills
+
+Before invoking this skill, the agent **must** detect missing dependencies and prompt
+the user to install them. Do **not** auto-install silently.
+
+| Skill | Why it is required | Install command |
+| --- | --- | --- |
+| `ego-browser` | Drives the Miaoshou ERP browser session | `npx skills add ego-browser -g` |
+| | `ego-browser` | drives the Miaoshou browser session | `npx skills add ego-browser -g` |
+| `miaoshou-1688-same-source` | upstream: supplies `offerId` + public-box row id | `npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-1688-same-source -g` |
+| `tiktok-shop-listing-optimization` | drafts the Japanese title + description | `npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-listing-optimization -g` |
+| `tiktok-shop-compliance` | pre-checks forbidden words + category whitelist | `npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-compliance -g` | | see below | see below |
+
+### Detection step (run first, every time)
+
+```bash
+set -e
+required_skills="ego-browser miaoshou-1688-same-source tiktok-shop-listing-optimization tiktok-shop-compliance"
+missing=""
+for s in $required_skills; do
+  for d in "$HOME/.codex/skills/$s" "$HOME/.agents/skills/$s"; do
+    if [ -d "$d" ]; then missing="$missing"; break; fi
+    missing="$missing $s"
+    break
+  done
+done
+if [ -n "$missing" ]; then
+  echo "MISSING_DEPENDENCIES:$missing"
+fi
+```
+
+If `MISSING_DEPENDENCIES:` prints, **stop**, then ask the user:
+
+> Required skill(s) are not installed: `<list>`. The flow cannot run without them.
+> Recommended install commands:
+> ```
+> <commands, one per line>
+> ```
+> Install now? (y/n)
+
+If the user approves, run the commands verbatim. If not, exit and report the missing
+dependencies as the result. Never proceed with the workflow on missing skills.
+
+
+### Install all missing dependencies at once
+
+```bash
+npx skills add ego-browser -g
+npx skills add peipeijiang/miaoshou-tiktok-shop-skills --skill miaoshou-1688-same-source -g
+npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-listing-optimization -g
+npx skills add nexscope-ai/eCommerce-Skills --skill tiktok-shop-compliance -g
+```
+
+After installing, the user must reload Codex (or run `npx skills experimental_sync -y`)
+so the SKILL.md files are picked up.
+
 ## Workflow
 
 ```mermaid
