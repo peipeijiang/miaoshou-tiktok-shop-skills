@@ -1,0 +1,55 @@
+{
+  "site": "TikTok Shop Japan",
+  "verifiedAt": "2026-09-14T10:20:00+08:00",
+  "route": "https://erp.91miaoshou.com/tiktok/collect_box/items",
+  "published": false,
+  "verification": {
+    "method": "visual review of every main and description image, save response check, close-and-reopen persisted-record check",
+    "forbiddenTermsFoundAfterSave": []
+  },
+  "items": [
+    {
+      "sourceId": "896801470833",
+      "titleJa": "スクエア型 ビッグフレーム メガネ レディース メンズ 軽量 ファッション ブラック ブラウン",
+      "mainImagesReviewed": 7,
+      "mainImagesKept": 7,
+      "descriptionImagesReviewed": 18,
+      "descriptionImageIndicesKept": [9, 10, 11, 12, 13, 14, 15, 16, 17],
+      "descriptionImageIndicesRemoved": [1, 2, 3, 4, 5, 6, 7, 8, 18],
+      "removalReasons": {
+        "1-6": "other eyeglass styles",
+        "7": "dropshipping advertisement",
+        "8": "supplier packaging promotion",
+        "18": "1x1 tracking or blank image"
+      },
+      "persistedImageCount": 9
+    },
+    {
+      "sourceId": "1066703735247",
+      "titleJa": "ウール混紡 ニット帽 レディース 秋冬 ゆったり ビーニー 防寒 保温 シンプル 無地",
+      "mainImagesReviewed": 10,
+      "mainImagesKept": 10,
+      "descriptionImagesReviewed": 9,
+      "descriptionImageIndicesKept": [1, 2, 3, 4, 5, 6, 7, 8],
+      "descriptionImageIndicesRemoved": [9],
+      "removalReasons": {
+        "9": "embedded Add to cart call to action"
+      },
+      "packageSizeCmAdded": [20, 20, 5],
+      "persistedImageCount": 8
+    },
+    {
+      "sourceId": "1053119261270",
+      "titleJa": "ミニチュア パン ディスプレイ スタンド 2段 ドールハウス ジオラマ 飾り棚 食玩 小物",
+      "mainImagesReviewed": 6,
+      "mainImagesKept": 6,
+      "descriptionImagesReviewed": 5,
+      "descriptionImageIndicesKept": [1, 2, 3, 4, 5],
+      "descriptionImageIndicesRemoved": [],
+      "categoryChangedFrom": "娃娃屋 (ドールハウス＆プレイセット)",
+      "categoryChangedTo": "小摆件与雕像 (彫像・置物)",
+      "categoryChangeReason": "the original category was invitation-only and rejected by the save API",
+      "persistedImageCount": 5
+    }
+  ]
+}
